@@ -19,8 +19,6 @@
         </div>
         <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
     </div>
-
-
     <div class="report-card">
         <div class="card">
             <div class="card-body flex flex-col">
@@ -32,9 +30,23 @@
                 <!-- bottom -->
                 <div class="mt-8">
                     <h1 class="h5 num-4">{{ stats.total_favorites }}</h1>
-                    <p>Total Books Favorites</p>
+                    <p>Favorites Books</p>
                 </div>
                 <!-- end bottom -->
+            </div>
+        </div>
+        <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
+    </div>
+    <div class="report-card">
+        <div class="card">
+            <div class="card-body flex flex-col">
+                <div class="flex flex-row justify-between items-center">
+                    <div class="h6 text-red-600 fad fa-exclamation-circle"></div>
+                </div>
+                <div class="mt-8">
+                    <h1 class="h5 num-4">{{ stats.overdue_books }}</h1>
+                    <p>Overdue Books</p>
+                </div>
             </div>
         </div>
         <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
@@ -49,12 +61,95 @@
               <!-- end top -->
               <!-- bottom -->
               <div class="mt-8">
-                  <h1 class="h5 num-4">{{ stats.total_rent_fee }}  ₹</h1>
-                  <p>Rent Fee (Current Month)</p>
+                  <h1 class="h5 num-4">{{ stats.total_fee }}  ₹</h1>
+                  <p>Total Fee</p>
               </div>
               <!-- end bottom -->
           </div>
       </div>
       <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
+    </div>
+</div>
+<!-- Search Books Section -->
+<div class="mt-8">
+    <div class="col-span-4">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6">
+                <h1 class="text-2xl font-semibold mb-6 text-center">Search Books</h1>
+                <form method="post">
+                    <div class="grid grid-cols-4 gap-4">
+                        <input type="text" 
+                               name="searcht" 
+                               class="col-span-1 px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
+                               placeholder="Search by Title">
+                        <input type="text" 
+                               name="searcha" 
+                               class="col-span-1 px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
+                               placeholder="Search by Author">
+                        <select name="category" 
+                                class="col-span-1 px-4 py-2 border border-gray-300 rounded bg-white focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Categories</option>
+                            <option value="Fiction">Fiction</option>
+                            <option value="Non-Fiction">Non-Fiction</option>
+                            <option value="Science">Science</option>
+                            <option value="Technology">Technology</option>
+                            <option value="History">History</option>
+                            <option value="Literature">Literature</option>
+                            <option value="Programming">Programming</option>
+                            <option value="Data Science">Data Science</option>
+                        </select>
+                        <button type="submit" 
+                                class="col-span-1 px-8 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if search_results %}
+        <div class="mt-6 bg-white rounded-lg shadow">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book Id</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for book in search_results %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{book.id}}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a href="/view_book/{{book.id}}" class="text-blue-600 hover:text-blue-800">
+                                    {{ book.title }}
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ book.author }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ book.isbn }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ book.category }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                Total: {{ book.copies }}, Available: {{ book.available_copies }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" 
+                                   href="/borrow_book/{{book.id}}">
+                                    Borrow
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock content %}

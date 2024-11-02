@@ -1,8 +1,5 @@
 import face_recognition
 import numpy as np
-from pathlib import Path
-from typing import Optional
-import os
 import cv2
 
 class FaceRecognition:

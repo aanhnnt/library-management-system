@@ -3,10 +3,10 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from ..database.connection import get_db
-from ..database.models import User
-from ..utils.auth import get_password_hash, login_required, verify_password
-from ..utils.face_recognition import FaceRecognition
+from app.database.connection import get_db
+from app.database.models import User
+from app.utils.auth import get_password_hash, login_required, verify_password
+from app.utils.face_recognition import FaceRecognition
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 templates = Jinja2Templates(directory="templates")

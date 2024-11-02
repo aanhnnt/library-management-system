@@ -1,15 +1,35 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from ..database.models import User
-from ..database.schemas import UserRole
-from ..database.connection import get_db
 from sqlalchemy.orm import Session
-from ..routers.auth import get_current_user
-from ..utils.auth import login_required
+from app.database.models import User
+from app.database.schemas import UserRole
+from app.database.connection import get_db
+from app.routers.auth import get_current_user
+from app.utils.auth import login_required
+from app.utils.dashboard import calculate_member_stats
 
 router = APIRouter(prefix="/member", tags=["member"])
 templates = Jinja2Templates(directory="templates")
+
+@router.get("/dashboard", response_class=HTMLResponse)
+@login_required
+async def member_dashboard(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user["role"] != UserRole.MEMBER.value:
+        return RedirectResponse(url="/", status_code=303)
+    
+    # Calculate dashboard stats
+    stats = calculate_member_stats(current_user["id"], db)
+    dashboard_data = {
+        "request": request,
+        "stats": stats
+    }
+
+    return templates.TemplateResponse("member/dashboard.html", dashboard_data)
 
 @router.get("/dashboard", response_class=HTMLResponse)
 @login_required
@@ -67,7 +87,7 @@ async def member_dashboard(
             "total_borrowed": 2,
             "total_favorites": 3,
             "overdue_books": 1,
-            "total_rent_fee": 100
+            "total_fee": 100
         }
     }
     
