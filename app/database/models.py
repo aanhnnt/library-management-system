@@ -38,16 +38,30 @@ class User(Base, BaseMixin):
     borrowed_books = relationship("BorrowingBook", back_populates="user")
     favorites = relationship("FavoriteBook", back_populates="user")
 
+class Author(Base, BaseMixin):
+    __tablename__ = "authors"
+    __table_args__ = {'comment': 'Contains information about book authors'}
+
+    name = Column(String(100), nullable=False)
+    biography = Column(Text, nullable=True)
+    birth_date = Column(DateTime, nullable=True)
+    nationality = Column(String(50), nullable=True)
+
+    # Relationships
+    books = relationship("Book", back_populates="author")
+
 class Book(Base, BaseMixin):
     __tablename__ = "books"
     __table_args__ = {'comment': 'Contains information about books in the library inventory'}
 
     title = Column(String(200), nullable=False)
     isbn = Column(String(13), unique=True, index=True)
-    author = Column(String(100), nullable=False)
+    author_id = Column(Integer, ForeignKey('authors.id'))
     publisher = Column(String(100))
     publication_year = Column(Integer)
     category_id = Column(Integer, ForeignKey('categories.id'))
+    rent_fee = Column(Float, default=0.0)
+    late_fee = Column(Float, default=0.0)
     total_copies = Column(Integer, default=1)
     available_copies = Column(Integer, default=1)
     
@@ -55,6 +69,7 @@ class Book(Base, BaseMixin):
     category = relationship("Category", back_populates="books")
     borrowing_books = relationship("BorrowingBook", back_populates="book")
     favorites = relationship("FavoriteBook", back_populates="book")
+    author = relationship("Author", back_populates="books")
 
 class Category(Base, BaseMixin):
     __tablename__ = "categories"
@@ -75,8 +90,6 @@ class BorrowingBook(Base, BaseMixin):
     borrow_date = Column(DateTime, default=datetime.now(timezone.utc))
     due_date = Column(DateTime)
     return_date = Column(DateTime, nullable=True)
-    rent_fee = Column(Float, default=0.0)
-    late_fee = Column(Float, default=0.0)
     status = Column(SQLEnum(BorrowStatus), default=BorrowStatus.BORROWED)
     
     user = relationship("User", back_populates="borrowed_books")

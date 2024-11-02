@@ -33,7 +33,7 @@
                       <td class="py-2 px-4 border border-gray-200">{{ book.isbn }}</td>
                       <td class="py-2 px-4 border border-gray-200">{{ book.category }}</td>
                       <td class="py-2 px-4 border border-gray-200">
-                          Total: {{ book.copies }}, Available: {{ book.available_copies }}
+                          Total: {{ book.total_copies }}, Available: {{ book.available_copies }}
                       </td>
                       <td class="py-2 px-4 border border-gray-200"><a class="ml-2 px-4 py-1 bg-green-500 text-white rounded hover:bg-green-600" href="edit_book/{{book.id}}">Edit </a>
                         <a class="ml-2 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600" href="delete_book/{{book.id}}" onclick="return confirm('Are you sure')">Delete </a></td>

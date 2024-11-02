@@ -1,0 +1,94 @@
+{% extends 'member/base.html' %}
+{% block content %}
+
+
+  <div class="overflow-x-auto rounded-lg shadow w-full">
+    <div class="container mx-auto py-8">
+        <center><h1 class="text-2xl font-semibold mb-4">Book List</h1>
+
+         <form class="mb-4" method="post" action="/member/overdue">
+            <input type="text" name="searcht" class="px-2 py-1 border border-gray-300 rounded" placeholder="Search by Title">
+            <input type="text" name="searcha" class="px-2 py-1 border border-gray-300 rounded" placeholder="Search by Author">
+            <button type="submit" class="ml-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Search</button>
+        </form></center>
+        <table class="w-full bg-white border border-gray-200 border-collapse">
+          <thead>
+              <tr class="bg-gray-100">
+                  <th class="py-2 px-4 text-left border border-gray-200">Book Id</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Title</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Author</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Borrow Date</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Due Date</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Rent Fee</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Late Fee</th>
+                  <th class="py-2 px-4 text-left border border-gray-200">Action</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for book in books %}
+              <tr class="{{ 'bg-gray-50' if loop.index is even else 'bg-white' }}">
+                      <td class="py-2 px-4 border border-gray-200" >{{book.book_id}}</td>
+                      <td class="py-2 px-4 border border-gray-200">
+                          <a href="/member/books/{{book.book_id}}" class="text-blue-500" title="Show More details">
+                              {{ book.title }}
+                          </a>
+                      </td>
+                      <td class="py-2 px-4 border border-gray-200">{{ book.author }}</td>
+                      <td class="py-2 px-4 border border-gray-200">{{ book.borrow_date }}</td>
+                      <td class="py-2 px-4 border border-gray-200">{{ book.due_date }}</td>
+                      <td class="py-2 px-4 border border-gray-200">{{ book.fees.rent_fee }}</td>
+                      <td class="py-2 px-4 border border-gray-200">
+                          <span class="text-red-500">{{ book.fees.late_fee }}</span>
+                      </td>
+                      <td class="py-2 px-4 border border-gray-200">
+                          <button class="ml-2 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                  onclick="handleReturn('{{book.id}}')">
+                              Return
+                          </button>
+                      </td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+      
+    </div>
+</div>
+
+<script>
+function handleReturn(borrowing_id) {
+    if (confirm('Are you sure you want to return this book?')) {
+        fetch(`/member/return/${borrowing_id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update UI
+                const actionCell = document.getElementById(`action-cell-${borrowing_id}`);
+                actionCell.innerHTML = `
+                    <span class="ml-2 px-4 py-1 bg-gray-400 text-white rounded">
+                        Return
+                    </span>
+                `;
+                
+                // Add opacity to the entire row
+                const row = actionCell.closest('tr');
+                row.classList.add('opacity-75');
+            } else {
+                alert(data.message || 'Error returning book');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error returning book');
+        });
+    }
+}
+</script>
+
+{% endblock %}

@@ -81,22 +81,19 @@
                         <input type="text" 
                                name="searcht" 
                                class="col-span-1 px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
-                               placeholder="Search by Title">
+                               placeholder="Search by Title"
+                               oninput="this.value = this.value.trim()">
                         <input type="text" 
                                name="searcha" 
                                class="col-span-1 px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
-                               placeholder="Search by Author">
+                               placeholder="Search by Author"
+                               oninput="this.value = this.value.trim()">
                         <select name="category" 
                                 class="col-span-1 px-4 py-2 border border-gray-300 rounded bg-white focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Categories</option>
-                            <option value="Fiction">Fiction</option>
-                            <option value="Non-Fiction">Non-Fiction</option>
-                            <option value="Science">Science</option>
-                            <option value="Technology">Technology</option>
-                            <option value="History">History</option>
-                            <option value="Literature">Literature</option>
-                            <option value="Programming">Programming</option>
-                            <option value="Data Science">Data Science</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
                         </select>
                         <button type="submit" 
                                 class="col-span-1 px-8 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -118,6 +115,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rent Fee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                         </tr>
@@ -127,21 +125,31 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">{{book.id}}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <a href="/view_book/{{book.id}}" class="text-blue-600 hover:text-blue-800">
+                                <a href="/member/books/{{book.id}}" class="text-blue-600 hover:text-blue-800">
                                     {{ book.title }}
                                 </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ book.author }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ book.isbn }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ book.category }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ book.rent_fee }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 Total: {{ book.copies }}, Available: {{ book.available_copies }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <a class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" 
-                                   href="/borrow_book/{{book.id}}">
-                                    Borrow
-                                </a>
+                                <div class="flex space-x-2">
+                                    <a class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" 
+                                       href="/member/borrow/{{book.id}}">
+                                        Borrow
+                                    </a>
+                                    <button id="favorite-btn-{{ book.id }}" 
+                                            class="px-4 py-2 {% if book.id in favorite_book_ids %}bg-purple-500 hover:bg-purple-600{% else %}bg-red-500 hover:bg-red-600{% endif %} text-white rounded" 
+                                            onclick="handleFavorite('{{ book.id }}', '{{ book.id in favorite_book_ids }}'==='True')">
+                                        <span id="favorite-text-{{ book.id }}">
+                                            Favorite
+                                        </span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -152,4 +160,46 @@
         {% endif %}
     </div>
 </div>
+<script>
+function handleFavorite(bookId, isFavorited) {
+    const button = document.getElementById(`favorite-btn-${bookId}`);
+    const textSpan = document.getElementById(`favorite-text-${bookId}`);
+    
+    const method = isFavorited ? 'DELETE' : 'POST';
+    const url = `/member/favorites/${bookId}`;
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            if (isFavorited) {
+                // Remove from favorites
+                button.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                button.classList.add('bg-red-500', 'hover:bg-red-600');
+                textSpan.textContent = 'Favorite';
+                button.onclick = () => handleFavorite(bookId, false);
+            } else {
+                // Add to favorites
+                button.classList.remove('bg-red-500', 'hover:bg-red-600');
+                button.classList.add('bg-purple-500', 'hover:bg-purple-600');
+                textSpan.textContent = 'Favorite';
+                button.onclick = () => handleFavorite(bookId, true);
+            }
+        } else {
+            alert(data.message || 'Error updating favorites');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating favorites');
+    });
+}
+</script>
 {% endblock content %}
