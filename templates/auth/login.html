@@ -3,173 +3,117 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<!-- Add modal for camera -->
-<div id="cameraModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Face Recognition Login</h2>
-        <div class="camera-container">
-            <video id="videoElement" autoplay playsinline></video>
-            <canvas id="canvasElement" style="display: none;"></canvas>
+<!-- Face Recognition Modal -->
+<div id="cameraModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+    <div class="bg-white rounded-lg max-w-md mx-auto mt-20 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Face Recognition Login</h2>
+            <button class="close text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
-        <div class="button-container">
-            <button id="captureBtn" class="primary-btn" disabled>Capture & Login</button>
+        <div class="relative">
+            <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden bg-gray-100">
+                <video id="videoElement" 
+                       class="w-full h-full object-cover transform scale-x-[-1]" 
+                       autoplay 
+                       playsinline>
+                </video>
+                <canvas id="canvasElement" class="hidden"></canvas>
+            </div>
+            <!-- Camera guide overlay -->
+            <div class="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg pointer-events-none opacity-50"></div>
         </div>
+        <button id="captureBtn" 
+                class="w-full mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled>
+            <span class="capture-text">Capture & Login</span>
+        </button>
     </div>
 </div>
 
-<!-- Rest of your login form -->
-<div class="login-container">
-    <div class="login-card">
-        <h2>Login</h2>
-        <p class="subtitle">Welcome back! Please enter your details.</p>
+<!-- Main Login Form -->
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-gray-900">Login</h2>
+            <p class="mt-2 text-sm text-gray-600">Welcome back! Please enter your details.</p>
+        </div>
 
         {% if error %}
-            <div class="error-message">
-                {{ error }}
-            </div>
+        <div class="bg-red-50 text-red-700 p-4 rounded-lg text-sm">
+            {{ error }}
+        </div>
         {% endif %}
 
         {% if success %}
-            <div class="success-message">
-                {{ success }}
-            </div>
+        <div class="bg-green-50 text-green-700 p-4 rounded-lg text-sm">
+            {{ success }}
+        </div>
         {% endif %}
 
-        <form method="POST" action="/auth/login">
-            <div class="form-group">
-                <input type="text" 
-                       class="form-control" 
-                       placeholder="Username or Email"
-                       name="username_or_email" 
-                       value="{{ username_or_email or '' }}"
-                       required>
-            </div>
-            
-            <div class="form-group">
-                <input type="password" 
-                       class="form-control" 
-                       placeholder="Password"
-                       name="password" 
-                       required>
-            </div>
-
-            <div class="form-options">
-                <a href="#" class="forgot-link">Forgot password?</a>
+        <form method="POST" action="/auth/login" class="mt-8 space-y-6">
+            <div class="space-y-4">
+                <div>
+                    <input type="text" 
+                           name="username_or_email" 
+                           value="{{ username_or_email or '' }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Username or Email">
+                </div>
+                
+                <div>
+                    <input type="password" 
+                           name="password" 
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Password">
+                </div>
             </div>
 
-            <button type="submit" class="login-btn">Sign in</button>
+            <div class="flex justify-end">
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+                Sign in
+            </button>
         </form>
 
-        <div class="signup-link">
-            <p>Don't have an account? <a href="/auth/signup">Sign up</a></p>
-        </div>
-
-        <div class="face-login-section">
-            <button id="faceLoginBtn" class="face-login-btn">
+        <div class="mt-4">
+            <button id="faceLoginBtn" class="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition duration-200 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 Login with Face Recognition
             </button>
         </div>
-    </div>
 
-    <div class="decorative-elements">
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
-        <div class="triangle triangle-1"></div>
-        <div class="triangle triangle-2"></div>
+        <div class="text-center mt-4">
+            <p class="text-sm text-gray-600">
+                Don't have an account? 
+                <a href="/auth/signup" class="text-blue-600 hover:text-blue-800">Sign up</a>
+            </p>
+        </div>
     </div>
 </div>
 
-<style>
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 8px;
-    position: relative;
-}
-
-.close {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover {
-    color: black;
-}
-
-.camera-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 20px auto;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-#videoElement {
-    width: 100%;
-    border-radius: 8px;
-    transform: scaleX(-1); /* Mirror effect */
-}
-
-.button-container {
-    text-align: center;
-    margin-top: 15px;
-}
-
-.primary-btn {
-    padding: 10px 20px;
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.primary-btn:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-}
-
-.primary-btn:hover:not(:disabled) {
-    background-color: #2563eb;
-}
-</style>
-
 <script>
-// Get modal elements
 const modal = document.getElementById('cameraModal');
-const closeBtn = document.getElementsByClassName('close')[0];
+const closeBtn = document.querySelector('.close');
 const video = document.getElementById('videoElement');
 const canvas = document.getElementById('canvasElement');
 const captureBtn = document.getElementById('captureBtn');
+const faceLoginBtn = document.getElementById('faceLoginBtn');
 let stream = null;
 
-// Face login button click handler
-document.getElementById('faceLoginBtn').addEventListener('click', async () => {
+// Show modal and start camera
+faceLoginBtn.addEventListener('click', async () => {
     try {
-        modal.style.display = "block";
+        modal.classList.remove('hidden');
         stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
                 width: { ideal: 1280 },
@@ -182,42 +126,46 @@ document.getElementById('faceLoginBtn').addEventListener('click', async () => {
     } catch (err) {
         console.error('Error:', err);
         alert('Could not access camera. Please ensure camera permissions are granted.');
-        modal.style.display = "none";
+        closeModal();
     }
 });
 
-// Close button handler
-closeBtn.onclick = function() {
-    stopCamera();
-    modal.style.display = "none";
-}
-
-// Click outside modal to close
-window.onclick = function(event) {
-    if (event.target == modal) {
-        stopCamera();
-        modal.style.display = "none";
+// Close modal and stop camera
+function closeModal() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
     }
+    video.srcObject = null;
+    modal.classList.add('hidden');
+    captureBtn.disabled = true;
 }
 
-// Capture and login handler
+closeBtn.addEventListener('click', closeModal);
+
+// Capture and login
 captureBtn.addEventListener('click', async () => {
     try {
-        // Disable button during processing
         captureBtn.disabled = true;
-        captureBtn.textContent = 'Processing...';
+        captureBtn.innerHTML = `
+            <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Processing...
+        `;
 
-        // Capture image
+        // Set canvas dimensions and capture frame
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        
-        // Convert to blob
+
+        // Convert canvas to blob
         const blob = await new Promise(resolve => {
             canvas.toBlob(resolve, 'image/jpeg');
         });
 
-        // Send to server
+        // Create form data and send request
         const formData = new FormData();
         formData.append('face_image', blob);
 
@@ -226,30 +174,30 @@ captureBtn.addEventListener('click', async () => {
             body: formData
         });
 
-        const data = await response.json();
-        if (data.success) {
-            stopCamera();
-            window.location.href = data.redirect_url;
+        const result = await response.json();
+        if (result.success) {
+            window.location.href = result.redirect_url;
         } else {
-            alert(data.error || 'Face verification failed');
+            alert(result.error || 'Face verification failed');
             captureBtn.disabled = false;
-            captureBtn.textContent = 'Capture & Login';
+            captureBtn.innerHTML = '<span class="capture-text">Capture & Login</span>';
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error during face recognition');
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error during face verification');
         captureBtn.disabled = false;
-        captureBtn.textContent = 'Capture & Login';
+        captureBtn.innerHTML = '<span class="capture-text">Capture & Login</span>';
     }
 });
 
-// Helper function to stop camera
-function stopCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
+// Close modal when clicking outside
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        closeModal();
     }
-    video.srcObject = null;
-}
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', closeModal);
 </script>
 {% endblock %} 
