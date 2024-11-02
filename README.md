@@ -62,6 +62,7 @@ DB_USER=root
 DB_PASSWORD=12345678
 DB_HOST=localhost
 DB_NAME=library
+DB_PORT=3306
 
 SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
@@ -111,28 +112,6 @@ library-management/
 ├── .env
 ├── requirements.txt
 └── README.md
-```
-
-## Development Setup
-
-1. Install development dependencies
-```bash
-pip install -r requirements.txt
-```
-
-2. Start Database
-```bash
-docker compose up -d
-```
-
-3. Initialize Database
-```bash
-python init_db.py
-```
-
-4. Start FastAPI Server
-```bash
-uvicorn app.main:app --reload
 ```
 
 ## Dependencies
