@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from ..database.schemas import UserRole
 from ..routers.auth import get_current_user
 from ..utils.auth import login_required
+from sqlalchemy.orm import Session
+from ..database.models import User
+from ..database.connection import get_db
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="templates")
@@ -262,4 +265,22 @@ async def admin_view_book_detail(
         ]
     }
     return templates.TemplateResponse("admin/book_detail.html", book_data)
+
+@router.get("/profile", response_class=HTMLResponse)
+@login_required
+async def admin_profile(request: Request, db: Session = Depends(get_db)):
+    user = request.session.get("user")
+    if user["role"] != UserRole.ADMIN.value:
+        return RedirectResponse(url="/auth/login", status_code=303)
+        
+    db_user = db.query(User).filter(User.id == user["id"]).first()
+    
+    return templates.TemplateResponse(
+        "auth/profile.html",
+        {
+            "request": request,
+            "user": db_user,
+            "has_face_id": db_user.face_embedding is not None
+        }
+    )
 

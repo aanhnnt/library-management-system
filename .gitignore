@@ -162,3 +162,4 @@ cython_debug/
 backup/
 data/
 .DS_Store
+static/face_data/

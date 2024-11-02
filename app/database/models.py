@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SQLEnum, ForeignKey
+from sqlalchemy import Column, Integer, LargeBinary, String, Boolean, DateTime, Enum as SQLEnum, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
@@ -20,14 +20,15 @@ class User(Base, BaseMixin):
     __table_args__ = {'comment': 'Stores user information including library members and administrators'}
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(100), unique=True, index=True, nullable=False)
-    username = Column(String(50), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(100), nullable=False)
-    role = Column(SQLEnum(UserRole), default=UserRole.MEMBER, nullable=False)
-    first_name = Column(String(50))
-    last_name = Column(String(50))
-    phone = Column(String(20))
-    address = Column(String(200))
+    email = Column(String(255), unique=True, index=True)
+    username = Column(String(255), unique=True, index=True)
+    hashed_password = Column(String(255))
+    first_name = Column(String(255), nullable=True)
+    last_name = Column(String(255), nullable=True)
+    phone = Column(String(20), nullable=True)
+    address = Column(Text, nullable=True)
+    role = Column(SQLEnum(UserRole), default=UserRole.MEMBER)
+    face_embedding = Column(LargeBinary, nullable=True)
 
     # Relationships
     borrowed_books = relationship("BookLoan", back_populates="user")

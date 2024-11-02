@@ -12,3 +12,6 @@ python-multipart
 itsdangerous
 bcrypt==4.0.1
 pydantic[email]
+dlib
+face-recognition
+opencv-python

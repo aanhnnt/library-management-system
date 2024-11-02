@@ -1,0 +1,114 @@
+{% extends "auth/base.html" %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <h2>Profile Settings</h2>
+        <p class="subtitle">Update your personal information</p>
+
+        {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        {% if success %}
+            <div class="success-message">
+                {{ success }}
+            </div>
+        {% endif %}
+
+        <form id="profileForm" class="profile-form">
+            <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" 
+                       class="form-control" 
+                       name="first_name"
+                       placeholder="Enter your first name"
+                       value="{{ user.first_name or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" 
+                       class="form-control" 
+                       name="last_name"
+                       placeholder="Enter your last name"
+                       value="{{ user.last_name or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" 
+                       class="form-control" 
+                       name="phone"
+                       placeholder="Enter your phone number"
+                       value="{{ user.phone or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <input class="form-control" 
+                          name="address" 
+                          placeholder="Enter your full address"
+                          value="{{ user.address or '' }}">
+            </div>
+
+            <button type="submit" class="login-btn">Update Profile</button>
+        </form>
+
+        <div class="face-id-section">
+            <h3>Face ID Settings</h3>
+            {% if has_face_id %}
+                <p>Face ID is enabled for your account</p>
+                <button id="updateFaceId" class="face-login-btn">Update Face ID</button>
+            {% else %}
+                <p>Enable Face ID for quick login</p>
+                <button id="setupFaceId" class="face-login-btn">Setup Face ID</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/auth/update-profile', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert(result.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error updating profile');
+    }
+});
+
+// Face ID setup/update button handlers
+const setupFaceIdBtn = document.getElementById('setupFaceId');
+const updateFaceIdBtn = document.getElementById('updateFaceId');
+
+if (setupFaceIdBtn) {
+    setupFaceIdBtn.addEventListener('click', () => {
+        window.location.href = '/auth/register-face';
+    });
+}
+
+if (updateFaceIdBtn) {
+    updateFaceIdBtn.addEventListener('click', () => {
+        window.location.href = '/auth/register-face';
+    });
+}
+</script>
+{% endblock %} 

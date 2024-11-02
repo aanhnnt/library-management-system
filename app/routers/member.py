@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from ..database.models import User
 from ..database.schemas import UserRole
+from ..database.connection import get_db
+from sqlalchemy.orm import Session
 from ..routers.auth import get_current_user
 from ..utils.auth import login_required
 
@@ -69,3 +72,21 @@ async def member_dashboard(
     }
     
     return templates.TemplateResponse("member/dashboard.html", dashboard_data)
+
+@router.get("/profile", response_class=HTMLResponse)
+@login_required
+async def member_profile(request: Request, db: Session = Depends(get_db)):
+    user = request.session.get("user")
+    if user["role"] != "member":
+        return RedirectResponse(url="/auth/login", status_code=303)
+        
+    db_user = db.query(User).filter(User.id == user["id"]).first()
+    
+    return templates.TemplateResponse(
+        "member/profile.html",
+        {
+            "request": request,
+            "user": db_user,
+            "has_face_id": db_user.face_embedding is not None
+        }
+    )

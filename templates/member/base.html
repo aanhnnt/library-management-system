@@ -21,21 +21,21 @@
     </div>
 
     <!-- user dropdown -->
-    <div class="flex flex-row-reverse items-center flex-1">
+    <div class="flex flex-row-reverse items-center flex-1 pr-8">
       <div class="dropdown relative md:static">
-        <button class="menu-btn focus:outline-none focus:shadow-outline flex flex-wrap items-center">
-          <div class="w-8 h-8 overflow-hidden rounded-full">
+        <button class="menu-btn focus:outline-none focus:shadow-outline flex items-center">
+          <div class="w-6 h-6 overflow-hidden rounded-full">
             <img class="w-full h-full object-cover" src="{{ url_for('static',path='img/user.svg') }}" >
           </div> 
-          <div class="ml-2 capitalize flex">
-            <h1 class="text-sm text-gray-800 font-semibold m-0 p-0 leading-none">Member</h1>
-            <i class="fad fa-chevron-down ml-2 text-xs leading-none"></i>
+          <div class="ml-1 capitalize flex items-center">
+            <h1 class="text-xs text-gray-800 font-medium m-0 p-0">Member</h1>
+            <i class="fad fa-chevron-down ml-1 text-[10px]"></i>
           </div>                        
         </button>
-        <div class="dropdown-content">
-          <a href="#">Profile</a>
-          <a href="#">Settings</a>
-          <a href="{{ url_for('logout') }}">Logout</a>
+        <div class="dropdown-content text-xs w-28 right-4">
+          <a href="/member/profile" class="py-1 px-2">Profile</a>
+          <a href="/auth/change-password" class="py-1 px-2">Change Password</a>
+          <a href="{{ url_for('logout') }}" class="py-1 px-2">Logout</a>
         </div>
       </div>
     </div>

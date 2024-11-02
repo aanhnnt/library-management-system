@@ -290,4 +290,69 @@ a:hover {
 .login-btn.loading {
     background-color: #93c5fd;
     cursor: not-allowed;
+}
+
+/* Face ID Option Styles */
+.face-id-option {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Reduced gap for less vertical space */
+    cursor: pointer;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 16px; /* Reduced width */
+    height: 16px; /* Reduced height */
+    cursor: pointer;
+}
+
+.checkbox-text {
+    font-size: 13px; /* Reduced font size */
+    color: rgba(30, 41, 59, 0.8); /* Made color slightly more transparent */
+}
+
+.face-id-description {
+    margin-top: 8px;
+    font-size: 11px; /* Reduced font size */
+    color: rgba(100, 116, 139, 0.8); /* Made color slightly more transparent */
+}
+
+/* Profile form styles */
+.profile-form {
+    width: 100%;
+}
+
+.profile-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.profile-form textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.face-id-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.face-id-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.face-id-section p {
+    color: #6b7280;
+    margin-bottom: 1rem;
 } 

@@ -1,0 +1,99 @@
+{% extends "auth/base.html" %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <h2>Face Registration</h2>
+        <p class="subtitle">Register your face for login authentication</p>
+
+        {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        {% if success %}
+            <div class="success-message">
+                {{ success }}
+            </div>
+        {% endif %}
+
+        <div class="video-container">
+            <video id="videoElement" autoplay playsinline></video>
+            <canvas id="canvasElement" style="display: none;"></canvas>
+        </div>
+
+        <div class="button-container">
+            <button id="startButton" class="primary-btn">Start Camera</button>
+            <button id="captureButton" class="primary-btn" disabled>Capture Face</button>
+        </div>
+
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Position your face in the center of the camera</li>
+                <li>Ensure good lighting</li>
+                <li>Remove glasses or face coverings</li>
+                <li>Stay still during capture</li>
+            </ul>
+        </div>
+
+        <div class="navigation-links">
+            <a href="/auth/login" class="back-link">Back to Login</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const videoElement = document.getElementById('videoElement');
+    const canvasElement = document.getElementById('canvasElement');
+    const startButton = document.getElementById('startButton');
+    const captureButton = document.getElementById('captureButton');
+
+    startButton.addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoElement.srcObject = stream;
+            startButton.disabled = true;
+            captureButton.disabled = false;
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            alert('Could not access camera. Please ensure camera permissions are granted.');
+        }
+    });
+
+    captureButton.addEventListener('click', async () => {
+        try {
+            // Capture frame from video
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
+            
+            // Convert to blob
+            const blob = await new Promise(resolve => {
+                canvasElement.toBlob(resolve, 'image/jpeg');
+            });
+
+            // Send to server
+            const formData = new FormData();
+            formData.append('face_image', blob);
+
+            const response = await fetch('/auth/register-face', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Face registered successfully!');
+                window.location.href = '/auth/login';
+            } else {
+                alert(result.error || 'Failed to register face');
+            }
+        } catch (err) {
+            console.error('Error capturing face:', err);
+            alert('Error capturing face. Please try again.');
+        }
+    });
+</script>
+{% endblock %} 
