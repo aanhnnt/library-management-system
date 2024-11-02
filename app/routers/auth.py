@@ -138,7 +138,17 @@ async def login(
                     "username_or_email": username_or_email
                 }
             )
-
+        
+        if user.is_deleted:
+            return templates.TemplateResponse(
+                "auth/login.html",
+                {
+                    "request": request,
+                    "error": "Account is inactive",
+                    "username_or_email": username_or_email
+                }
+            )
+            
         request.session["user"] = {
             "id": user.id,
             "email": user.email,
@@ -221,14 +231,20 @@ async def login_face(
         
         for user in users:
             is_match = await face_recognition.verify_face(image_data, user.face_embedding)
-            if is_match:
-                request.session["user"] = {
-                    "id": user.id,
-                    "email": user.email,
-                    "username": user.username,
-                    "role": user.role.value
-                }
-                return {"success": True, "redirect_url": "/"}
+
+            if not is_match:
+                continue
+            
+            if is_match and user.is_deleted:
+                return {"success": False, "error": "User account is inactive"}
+                
+            request.session["user"] = {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "role": user.role.value
+            }
+            return {"success": True, "redirect_url": "/"}
                 
         return {"success": False, "error": "Face verification failed"}
     except Exception as e:
