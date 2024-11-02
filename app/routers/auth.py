@@ -235,21 +235,6 @@ async def login_face(
         print(f"Login error: {str(e)}")
         return {"success": False, "error": "Error during face verification"}
 
-@router.get("/profile", response_class=HTMLResponse)
-@login_required
-async def profile_page(request: Request, db: Session = Depends(get_db)):
-    user = request.session.get("user")
-    db_user = db.query(User).filter(User.id == user["id"]).first()
-    
-    return templates.TemplateResponse(
-        "auth/profile.html",
-        {
-            "request": request,
-            "user": db_user,
-            "has_face_id": db_user.face_embedding is not None
-        }
-    )
-
 @router.post("/update-profile")
 @login_required
 async def update_profile(

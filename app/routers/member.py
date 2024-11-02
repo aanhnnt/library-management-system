@@ -77,13 +77,13 @@ async def member_dashboard(
 @login_required
 async def member_profile(request: Request, db: Session = Depends(get_db)):
     user = request.session.get("user")
-    if user["role"] != "member":
+    if user["role"] != UserRole.MEMBER.value:
         return RedirectResponse(url="/auth/login", status_code=303)
         
     db_user = db.query(User).filter(User.id == user["id"]).first()
     
     return templates.TemplateResponse(
-        "member/profile.html",
+        "auth/profile.html",
         {
             "request": request,
             "user": db_user,

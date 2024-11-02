@@ -28,7 +28,7 @@
             <img class="w-full h-full object-cover" src="{{ url_for('static',path='img/user.svg') }}" >
           </div> 
           <div class="ml-1 capitalize flex items-center">
-            <h1 class="text-xs text-gray-800 font-medium m-0 p-0">Member</h1>
+            <h1 class="text-xs text-gray-800 font-medium m-0 p-0">{{ request.session.get('user')['username'] }}</h1>
             <i class="fad fa-chevron-down ml-1 text-[10px]"></i>
           </div>                        
         </button>
