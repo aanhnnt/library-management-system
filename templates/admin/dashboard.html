@@ -89,12 +89,12 @@
             </tr>
         </thead>
         <tbody class="text-gray-600">
-            {% for transaction, book in recent_transactions %}
+            {% for transaction in recent_transactions %}
             <tr>
                 <td class="border border-l-0 px-4 py-2 "></i>{{transaction.id}}</td>
-                <td class="border border-l-0 px-4 py-2">{{ book.title }}</td>
+                <td class="border border-l-0 px-4 py-2">{{ transaction.title }}</td>
                 <td class="border border-l-0 px-4 py-2"> ₹{{ transaction.rent_fee }}</td>
-                <td class="border border-l-0 border-r-0 px-4 py-2">{{ transaction.issue_date }} minutes ago</td>
+                <td class="border border-l-0 border-r-0 px-4 py-2">{{ transaction.borrowed_date }} minutes ago</td>
             </tr>
             {% endfor %}
         </tbody>

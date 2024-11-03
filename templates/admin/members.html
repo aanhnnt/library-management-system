@@ -1,44 +1,133 @@
 {% extends 'admin/base.html' %}
 {% block content %}
 
-
-  <div class="overflow-x-auto rounded-lg shadow w-full">
+<div class="overflow-x-auto rounded-lg shadow w-full">
     <div class="container mx-auto py-8">
-        <center><h1 class="text-2xl font-semibold mb-4">Member List</h1>
-
-         <form class="mb-4" method="post">
-            <input type="text" name="search" class="px-2 py-1 border border-gray-300 rounded" placeholder="Search by Name">
-            <button type="submit" class="ml-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Search</button>
-        </form></center>
+        <div class="flex justify-between items-center mb-6 px-4">
+            <h1 class="text-2xl font-semibold">Member List</h1>
+        </div>
+        <center>
+            <form class="mb-4 flex gap-4 max-w-4xl mx-auto items-center justify-center" method="post">
+                <input type="text" 
+                       name="search_name" 
+                       class="px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
+                       placeholder="Search by Name"
+                       value="{{ search_name or '' }}">
+                <input type="text" 
+                       name="search_email" 
+                       class="px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" 
+                       placeholder="Search by Email"
+                       value="{{ search_email or '' }}">
+                <select name="status" 
+                        class="px-4 py-2 border border-gray-300 rounded bg-white focus:ring-blue-500 focus:border-blue-500">
+                    <option value="" {% if not status %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+                <button type="submit" 
+                        class="px-8 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
+                    Search
+                </button>
+            </form>
+        </center>
         <table class="w-full bg-white border border-gray-200 border-collapse">
-          <thead>
-              <tr class="bg-gray-100">
-                  <th class="py-2 px-4 text-left border border-gray-200">Member Id</th>
-                  <th class="py-2 px-4 text-left border border-gray-200">Name</th>
-                  <th class="py-2 px-4 text-left border border-gray-200">Email</th>
-                  <th class="py-2 px-4 text-left border border-gray-200">Status</th>
-                  <th class="py-2 px-4 text-left border border-gray-200">Join Date</th>
-                  <th class="py-2 px-4 text-left border border-gray-200">Action</th>
-
-              </tr>
-          </thead>
-          <tbody>
-              {% for i in members %}
-              <tr class="{{ 'bg-gray-50' if loop.index is even else 'bg-white' }}">
-                      <td class="py-2 px-4 border border-gray-200">{{ i.id}}</td>
-                      <td class="py-2 px-4 border border-gray-200"><a href="/admin/members/{{i.id}}" class="text-green-500" title="Show More details">{{ i.name}}</a></td>
-                      <td class="py-2 px-4 border border-gray-200">{{ i.email }}</td>
-                      <td class="py-2 px-4 border border-gray-200">{{ i.status }}</td>
-                      <td class="py-2 px-4 border border-gray-200">{{ i.join_date }}</td>
-                      <td class="py-2 px-4 border border-gray-200">
-                        <a class="ml-2 px-4 py-1 bg-green-500 text-white rounded hover:bg-green-600" href="edit_member/{{i.id}}">Edit </a>
-                      <a class="ml-2 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600" href="delete_member/{{i.id}}" onclick="return confirm('Are you sure')">Delete </a></td>
-                    </tr>
-              {% endfor %}
-          </tbody>
-      </table>
-      
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="py-2 px-4 text-left border border-gray-200">Member Id</th>
+                    <th class="py-2 px-4 text-left border border-gray-200">Name</th>
+                    <th class="py-2 px-4 text-left border border-gray-200">Email</th>
+                    <th class="py-2 px-4 text-left border border-gray-200">Status</th>
+                    <th class="py-2 px-4 text-left border border-gray-200">Join Date</th>
+                    <th class="py-2 px-4 text-left border border-gray-200">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in members %}
+                <tr class="{{ 'bg-gray-50' if loop.index is even else 'bg-white' }}">
+                    <td class="py-2 px-4 border border-gray-200">{{ i.id }}</td>
+                    <td class="py-2 px-4 border border-gray-200">
+                        <a href="/admin/members/{{i.id}}" class="text-blue-600 hover:text-blue-900" title="Show More details">
+                            {{ i.first_name }} {{ i.last_name }}
+                        </a>
+                    </td>
+                    <td class="py-2 px-4 border border-gray-200">{{ i.email }}</td>
+                    <td class="py-2 px-4 border border-gray-200">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if not i.is_deleted %}
+                                bg-green-100 text-green-800
+                            {% else %}
+                                bg-red-100 text-red-800
+                            {% endif %}">
+                            {{ "Active" if not i.is_deleted else "Inactive" }}
+                        </span>
+                    </td>
+                    <td class="py-2 px-4 border border-gray-200">{{ i.created_at.date() }}</td>
+                    <td class="py-2 px-4 border border-gray-200">
+                        {% if not i.is_deleted %}
+                        <button onclick="deactivateMember('{{ i.id }}')"
+                                class="w-24 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+                            Deactivate
+                        </button>
+                        {% else %}
+                        <button onclick="activateMember('{{ i.id }}')"
+                                class="w-24 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+                            Activate
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
+
+<script>
+async function deactivateMember(memberId) {
+    if (!confirm('Are you sure you want to deactivate this member?')) {
+        return;
+    }
+    try {
+        const response = await fetch(`/admin/members/${memberId}/deactivate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.detail);
+        }
+    } catch (error) {
+        alert('Error occurred while deactivating member');
+    }
+}
+
+async function activateMember(memberId) {
+    if (!confirm('Are you sure you want to activate this member?')) {
+        return;
+    }
+    try {
+        const response = await fetch(`/admin/members/${memberId}/activate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.detail);
+        }
+    } catch (error) {
+        alert('Error occurred while activating member');
+    }
+}
+</script>
 
 {% endblock %}

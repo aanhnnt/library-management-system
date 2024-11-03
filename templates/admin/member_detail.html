@@ -1,43 +1,199 @@
 {% extends 'admin/base.html' %}
 {% block content %}
 
-<div class="container mx-auto mt-10">
-    <h1 class="text-3xl font-semibold mb-4">Member Details</h1>
-    <div class="bg-white p-6 rounded shadow">
-        <h2 class="text-xl font-semibold mb-2">{{ member.name }}</h2>
-        <p class="text-gray-600">{{ member.address }}</p>
-        <p class="text-gray-600">{{ member.phone }}</p>
-        <p class="text-gray-600">{{ member.email }}</p>
-        <p class="text-gray-600">Outstanding Debt: {{ debt}}</p>
+<div class="container mx-auto mt-10 px-4">
+    <!-- Member Stats Cards -->
+    <div class="grid grid-cols-4 gap-6 xl:grid-cols-1 mb-6">
+        <div class="report-card">
+            <div class="card">
+                <div class="card-body flex flex-col">
+                    <div class="flex flex-row justify-between items-center">
+                        <div class="h6 text-blue-700 fad fa-book"></div>
+                    </div>
+                    <div class="mt-8">
+                        <h1 class="h5 num-4">{{ transactions|length }}</h1>
+                        <p>Total Borrowed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
+        </div>
+
+        <div class="report-card">
+            <div class="card">
+                <div class="card-body flex flex-col">
+                    <div class="flex flex-row justify-between items-center">
+                        <div class="h6 text-green-700 fad fa-book"></div>
+                    </div>
+                    <div class="mt-8">
+                        <h1 class="h5 num-4">{{ transactions|selectattr('return_date', 'none')|list|length }}</h1>
+                        <p>Currently Borrowed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
+        </div>
+
+        <div class="report-card">
+            <div class="card">
+                <div class="card-body flex flex-col">
+                    <div class="flex flex-row justify-between items-center">
+                        <div class="h6 text-red-600 fad fa-exclamation-circle"></div>
+                    </div>
+                    <div class="mt-8">
+                        <h1 class="h5 num-4">{{ transactions|selectattr('is_overdue')|list|length }}</h1>
+                        <p>Overdue Books</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
+        </div>
+
+        <div class="report-card">
+            <div class="card">
+                <div class="card-body flex flex-col">
+                    <div class="flex flex-row justify-between items-center">
+                        <div class="h6 text-yellow-600 fad fa-money-bill-wave"></div>
+                    </div>
+                    <div class="mt-8">
+                        <h1 class="h5 num-4">${{ outstanding_debt }}</h1>
+                        <p>Outstanding Debt</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer bg-white p-1 mx-4 border border-t-0 rounded rounded-t-none"></div>
+        </div>
     </div>
-    <div class="bg-white mt-4 p-6 rounded shadow">
-        <h2 class="text-xl font-semibold mb-2">Transactions</h2>
-        {% if trans %}
-            <table class="table-auto w-full">
-                <thead>
+
+    <!-- Member Info -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Member Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <p class="text-gray-600"><span class="font-medium">Name:</span> {{ member.first_name }} {{ member.last_name }}</p>
+                <p class="text-gray-600"><span class="font-medium">Email:</span> {{ member.email }}</p>
+                <p class="text-gray-600"><span class="font-medium">Join Date:</span> {{ member.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+            <div class="text-right">
+                {% if not member.is_deleted %}
+                <button class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="deactivateMember('{{ member.id }}')">
+                    Deactivate Member
+                </button>
+                {% else %}
+                <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600" onclick="activateMember('{{ member.id }}')">
+                    Activate Member
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-4">Transaction History</h2>
+        {% if transactions %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <th class="border px-4 py-2">Id</th>
-                        <th class=" border px-4 py-2">Issue Date</th>
-                        <th class="border px-4 py-2">Return Date</th>
-                        <th class="border px-4 py-2">Rent Fee</th>
-                        <th class="border px-4 py-2">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Book</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrow Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Return Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Fee</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for trans in trans %}
-                        <tr>
-                            <td class="border px-4 py-2"> <a class="text-green-500" href ="/returnbook/{{trans.id}}">{{ trans.id }}</a></td>
-                            <td class="border px-4 py-2">{{ trans.issue_date.date() }}</td>
-                            <td class="border px-4 py-2">{{ trans.return_date or 'Not returned yet' }}</td>
-                            <td class="border px-4 py-2">{{ trans.rent_fee }}</td>
-                            <td class="py-2 px-4 border border-gray-200"> <a class="ml-2 px-4 py-1 bg-green-500 text-white rounded hover:bg-green-600" href ="/returnbook/{{trans.id}}">Manage</a></td>
-                        </tr>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for trans in transactions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="/admin/books/{{ trans.book.id }}" class="text-blue-600 hover:text-blue-900">
+                                {{ trans.book.title }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ trans.borrow_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ trans.due_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{ trans.return_date.strftime('%Y-%m-%d') if trans.return_date else 'Not returned' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if not trans.return_date %}
+                                    {% if trans.is_overdue %}
+                                        bg-red-100 text-red-800
+                                    {% else %}
+                                        bg-green-100 text-green-800
+                                    {% endif %}
+                                {% else %}
+                                    bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {% if not trans.return_date %}
+                                    {{ "Overdue" if trans.is_overdue else "Active" }}
+                                {% else %}
+                                    Returned
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">${{ trans.total_fee }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
         {% else %}
-            <p class="text-gray-600">No transactions found for this member.</p>
+        <p class="text-gray-500">No transaction history</p>
         {% endif %}
     </div>
 </div>
+
+<!-- Add this before closing body tag -->
+<script>
+async function deactivateMember(memberId) {
+    if (!confirm('Are you sure you want to deactivate this member?')) {
+        return;
+    }
+    try {
+        const response = await fetch(`/admin/members/${memberId}/deactivate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.detail);
+        }
+    } catch (error) {
+        alert('Error occurred while deactivating member');
+    }
+}
+
+async function activateMember(memberId) {
+    if (!confirm('Are you sure you want to activate this member?')) {
+        return;
+    }
+    try {
+        const response = await fetch(`/admin/members/${memberId}/activate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.detail);
+        }
+    } catch (error) {
+        alert('Error occurred while activating member');
+    }
+}
+</script>
+
 {% endblock %}

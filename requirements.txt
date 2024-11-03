@@ -15,3 +15,4 @@ pydantic[email]
 dlib
 face-recognition
 opencv-python
+python-dateutil

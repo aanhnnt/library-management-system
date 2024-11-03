@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
+from dateutil.relativedelta import relativedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import extract, or_
 
-from app.database.models import Author, Book, BorrowStatus, BorrowingBook, Category, FavoriteBook
+from app.database.models import Author, Book, BorrowStatus, BorrowingBook, Category, FavoriteBook, User, UserRole
 
 def calculate_member_stats(user_id: int, db: Session):
     # Ensure all datetime comparisons are timezone-aware
@@ -30,11 +31,62 @@ def calculate_member_stats(user_id: int, db: Session):
     }
 
 def calculate_admin_stats(db: Session):
-    pass
+    # Get current month and year with timezone awareness
+    current_time = datetime.now(timezone.utc)
+    current_month = current_time.month
+    current_year = current_time.year
+    
+    # Get all rentals for current month
+    current_month_rentals = db.query(BorrowingBook).filter(
+        or_(
+            extract('month', BorrowingBook.borrow_date) == current_month,
+            extract('month', BorrowingBook.return_date) == current_month,
+            extract('month', BorrowingBook.due_date) == current_month
+        ),
+        extract('year', BorrowingBook.borrow_date) == current_year,
+        extract('year', BorrowingBook.return_date) == current_year,
+        extract('year', BorrowingBook.due_date) == current_year
+    ).all()
 
-def get_categories(db: Session, limit: int = 10):
+    # Calculate total earnings for current month
+    total_earnings = 0
+    for rental in current_month_rentals:
+        if rental.return_date:  # Only count completed rentals
+            # Make all datetime objects timezone-aware
+            start_of_month = datetime(current_year, current_month, 1, tzinfo=timezone.utc)
+            end_of_month = (start_of_month + relativedelta(months=1)).replace(day=1)
+            
+            borrow_date = rental.borrow_date.replace(tzinfo=timezone.utc)
+            return_date = rental.return_date.replace(tzinfo=timezone.utc) if rental.return_date else current_time
+
+            # Adjust dates to fit within the current month
+            adjusted_borrow_date = max(borrow_date, start_of_month)
+            adjusted_due_date = min(return_date, end_of_month)
+
+            fees = calculate_book_fees(
+                adjusted_borrow_date,
+                rental.due_date.replace(tzinfo=timezone.utc),
+                return_date,
+                rental.book.rent_fee,
+                rental.book.late_fee
+            )
+            total_earnings += fees['total_fee']
+
+    # Calculate other stats
+    total_books = db.query(Book).count()
+    total_members = db.query(User).filter(User.role == UserRole.MEMBER).count()
+    total_borrowed = db.query(BorrowingBook).filter(BorrowingBook.status == BorrowStatus.BORROWED).count()
+    
+    return {
+        "total_books": total_books,
+        "total_members": total_members,
+        "total_borrowed": total_borrowed,
+        "total_rent_current_month": total_earnings
+    }
+
+def get_categories(db: Session):
     """Retrieve a limited number of categories from the database."""
-    return db.query(Category).limit(limit).all()
+    return db.query(Category).all()
 
 def get_books(db: Session):
     """Retrieve all books"""
@@ -272,3 +324,45 @@ def get_user_book_transactions(db: Session, book_id: int, user_id: int):
         tran.total_fee = fee["total_fee"]
         tran.status = tran.status.value
     return trans
+
+def get_book_transactions(db: Session, book_id: int):
+    """Get transaction history for a specific book and user"""
+    trans =  db.query(BorrowingBook).filter(
+        BorrowingBook.book_id == book_id
+    ).order_by(BorrowingBook.borrow_date.desc()).all()
+
+    for tran in trans:
+        fee = calculate_book_fees(
+            tran.borrow_date,
+            tran.due_date,
+            tran.return_date,
+            tran.book.rent_fee,
+            tran.book.late_fee
+        )
+        tran.rent_fee = fee["rent_fee"]
+        tran.late_fee = fee["late_fee"]
+        tran.total_fee = fee["total_fee"]
+        tran.status = tran.status.value
+    return trans
+
+def get_member_transactions(db: Session, member_id: int):
+    """Get transaction history for a specific member"""
+    """Get transaction history for a specific book and user"""
+    trans =  db.query(BorrowingBook).filter(
+        BorrowingBook.user_id == member_id
+    ).order_by(BorrowingBook.borrow_date.desc()).all()
+
+    for tran in trans:
+        fee = calculate_book_fees(
+            tran.borrow_date,
+            tran.due_date,
+            tran.return_date,
+            tran.book.rent_fee,
+            tran.book.late_fee
+        )
+        tran.rent_fee = fee["rent_fee"]
+        tran.late_fee = fee["late_fee"]
+        tran.total_fee = fee["total_fee"]
+        tran.status = tran.status.value
+    return trans
+
