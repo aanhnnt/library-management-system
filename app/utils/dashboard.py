@@ -116,8 +116,8 @@ def calculate_book_fees(borrow_date: datetime, due_date: datetime, return_date: 
     late_days = max(0, (end_date - due_date).days)
     
     # Calculate fees
-    total_rent_fee = rent_fee * rent_days
-    total_late_fee = late_fee * late_days
+    total_rent_fee = round(rent_fee * rent_days, 2)
+    total_late_fee = round(late_fee * late_days, 2)
     
     return {
         "rent_days": rent_days,

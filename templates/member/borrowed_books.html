@@ -41,7 +41,7 @@
                       <td class="py-2 px-4 border border-gray-200">{{ book.fees.rent_fee }}</td>
                       <td class="py-2 px-4 border border-gray-200">{{ book.fees.late_fee }}</td>
                       <td class="py-2 px-4 border border-gray-200" id="action-cell-{{book.id}}">
-                          {% if book.status == 'BORROWED' %}
+                          {% if book.status.value == 'BORROWED' %}
                               <button class="ml-2 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                                       onclick="handleReturn('{{book.id}}')">
                                   Return

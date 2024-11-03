@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.database.connection import get_db
-from app.database.models import User
+from app.database.models import User, UserRole
 from app.utils.auth import get_password_hash, login_required, verify_password
 from app.utils.face_recognition import FaceRecognition
 
@@ -36,64 +36,66 @@ async def signup_page(request: Request):
         {"request": request}
     )
 
-@router.post("/signup")
+@router.post("/signup", response_class=HTMLResponse)
 async def signup(
     request: Request,
     email: str = Form(...),
     username: str = Form(...),
     password: str = Form(...),
+    confirm_password: str = Form(...),
     enable_face_id: bool = Form(False),
     db: Session = Depends(get_db)
 ):
-    # Check if user exists
-    existing_user = db.query(User).filter(
-        (User.email == email) | (User.username == username)
-    ).first()
-    
-    if existing_user:
-        return templates.TemplateResponse(
-            "auth/signup.html",
-            {
-                "request": request, 
-                "error": "Username or email already registered",
-                "username": username,
-                "email": email
-            }
-        )
-    
-    # Create new user
-    hashed_password = get_password_hash(password)
-    db_user = User(
-        username=username,
-        email=email,
-        hashed_password=hashed_password
-    )
-    
     try:
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-        
-        if enable_face_id:
+        if password != confirm_password:
             return templates.TemplateResponse(
-                "auth/register_face.html",
-                {"request": request, "user_id": db_user.id}
+                "auth/signup.html",
+                {"request": request, "error": "Passwords do not match", "email": email, "username": username}
             )
-        
-        return RedirectResponse(
-            url="/auth/login?success=Account created successfully! Please login.",
-            status_code=303
+
+        # Check if username exists
+        if db.query(User).filter(User.username == username).first():
+            return templates.TemplateResponse(
+                "auth/signup.html",
+                {"request": request, "error": "Username already exists", "email": email}
+            )
+
+        # Check if email exists
+        if db.query(User).filter(User.email == email).first():
+            return templates.TemplateResponse(
+                "auth/signup.html",
+                {"request": request, "error": "Email already exists", "username": username}
+            )
+
+        # Create new user
+        hashed_password = get_password_hash(password)
+        new_user = User(
+            email=email,
+            username=username,
+            hashed_password=hashed_password
         )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        # Set session
+        request.session["user"] = {
+            "id": new_user.id,
+            "username": new_user.username,
+            "email": new_user.email,
+            "role": new_user.role.value
+        }
+
+        # Redirect based on face ID preference
+        if enable_face_id:
+            return RedirectResponse(url="/auth/register-face", status_code=303)
+        else:
+            return RedirectResponse(url="/member/dashboard", status_code=303)
+
     except Exception as e:
-        db.rollback()
         return templates.TemplateResponse(
             "auth/signup.html",
-            {
-                "request": request, 
-                "error": "An error occurred. Please try again.",
-                "username": username,
-                "email": email
-            }
+            {"request": request, "error": str(e), "email": email, "username": username}
         )
 
 @router.get("/login", response_class=HTMLResponse)

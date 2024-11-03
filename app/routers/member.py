@@ -240,7 +240,7 @@ async def borrow_book(
             }
         )
 
-@router.post("/return/{book_id}")
+@router.post("/return/{borrowing_id}")
 @login_required
 async def return_book(
     request: Request,
