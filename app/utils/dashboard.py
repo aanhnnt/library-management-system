@@ -110,7 +110,7 @@ def calculate_book_fees(borrow_date: datetime, due_date: datetime, return_date: 
     end_date = return_date.replace(tzinfo=timezone.utc) if return_date else current_time
     
     # Calculate rental days (from borrow to due date)
-    rent_days = (due_date - borrow_date).days
+    rent_days = (due_date - borrow_date).days if end_date > due_date else max(0, (end_date - borrow_date).days)
     
     # Calculate late days (from due date to return/current date)
     late_days = max(0, (end_date - due_date).days)
