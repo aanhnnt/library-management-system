@@ -1,0 +1,60 @@
+graph LR
+    subgraph Library Management System
+        subgraph Admin Functions
+            A1[Quản lý Sách]
+            A2[Quản lý Thành viên] 
+            A3[Xem Thống kê]
+            A4[Quản lý Danh mục]
+            
+            A1 --> A11[Thêm sách mới]
+            A1 --> A12[Sửa thông tin sách]
+            A1 --> A13[Xóa sách]
+            A1 --> A14[Xem chi tiết sách]
+            
+            A2 --> A21[Xem danh sách thành viên]
+            A2 --> A22[Vô hiệu hóa tài khoản]
+            A2 --> A23[Xem chi tiết thành viên]
+            A2 --> A24[Theo dõi công nợ]
+            
+            A3 --> A31[Xem thống kê sách]
+            A3 --> A32[Xem thống kê doanh thu]
+            A3 --> A33[Xem thống kê thành viên]
+            
+            A4 --> A41[Thêm danh mục]
+            A4 --> A42[Xóa danh mục]
+        end
+
+        subgraph Member Functions
+            M1[Quản lý Tài khoản]
+            M2[Tương tác Sách]
+            M3[Quản lý Mượn/Trả]
+            M4[Xem Dashboard]
+            
+            M1 --> M11[Đăng ký]
+            M1 --> M12[Đăng nhập]
+            M1 --> M13[Đăng ký Face ID]
+            M1 --> M14[Cập nhật thông tin]
+            
+            M2 --> M21[Tìm kiếm sách]
+            M2 --> M22[Xem chi tiết sách]
+            M2 --> M23[Thêm vào yêu thích]
+            M2 --> M24[Quản lý sách yêu thích]
+            
+            M3 --> M31[Xem sách đang mượn]
+            M3 --> M32[Xem lịch sử mượn]
+            M3 --> M33[Xem sách quá hạn]
+            
+            M4 --> M41[Xem thống kê cá nhân]
+            M4 --> M42[Xem phí phải trả]
+        end
+    end
+
+    Admin((Admin)) --> A1
+    Admin --> A2
+    Admin --> A3
+    Admin --> A4
+    
+    Member((Member)) --> M1
+    Member --> M2
+    Member --> M3
+    Member --> M4
